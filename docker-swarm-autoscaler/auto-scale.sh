@@ -5,24 +5,26 @@ CPU_PERCENTAGE_UPPER_LIMIT=85
 CPU_PERCENTAGE_LOWER_LIMIT=25
 PROMETHEUS_API="api/v1/query?query="
 
-## this query return all services 
-## we need to find a way to return 1 services 
-PROMETHEUS_QUERY="sum(rate(container_cpu_usage_seconds_total%7Bcontainer_label_com_docker_swarm_task_name%3D~%27.%2B%27%7D%5B5m%5D))BY(container_label_com_docker_swarm_service_name%2Cinstance)*100"
-
-## decoded query 
-## sum(rate(container_cpu_usage_seconds_total{container_label_com_docker_swarm_task_name=~'.+'}[5m]))BY(container_label_com_docker_swarm_service_name,instance)*100
-
+## PKO acquire all service with the label "swarm.autoscaler=true"
+## return the service name, the min replica, the max replica 
+## ================================================================
 get_svc_autoscaler() {
-    local toscale=$(docker service inspect $(docker service ls -q) | jq  '[.[] | select(.Spec.Labels["swarm.autoscaler"]=="true")| {name:.Spec.Name, min:.Spec.Labels["swarm.autoscaler.minimum"], max:.Spec.Labels["swarm.autoscaler.maximum"]}] ')
-    echo $toscale 
+    local services=$(docker service inspect $(docker service ls -q) | jq  '[.[] | select(.Spec.Labels["swarm.autoscaler"]=="true")| {name:.Spec.Name, min:.Spec.Labels["swarm.autoscaler.minimum"], max:.Spec.Labels["swarm.autoscaler.maximum"],repl:.Spec.Mode.Replicated.Replicas}] ')
+    echo $services 
 }
 
+## PKO search last metrics for the requested service (param $1)
+## return the last 5 min aggregation in %
+## ================================================================
 get_svc_metrics() {
-  results=$(curl --silent "${PROMETHEUS_URL}/${PROMETHEUS_API}${PROMETHEUS_QUERY}" | jq .)
-  echo $results 
+  local SVC=$1
+  local PQUERY=sum%28rate%28container_cpu_usage_seconds_total%7Bcontainer_label_com_docker_swarm_service_name%3D%22$SVC%22%7D%5B5m%5D%29%20%29%2A100
+  local value=$(curl --silent "${PROMETHEUS_URL}/${PROMETHEUS_API}${PQUERY}" | jq '.data.result[0].value[1]')
+  echo $value 
 }
 
 
+##### OLD PART
 get_high_cpu_services () {
   local prometheus_results="${1}"
   local services=""
