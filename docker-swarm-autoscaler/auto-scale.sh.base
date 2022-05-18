@@ -4,24 +4,7 @@ LOOP=${LOOP:='yes'}
 CPU_PERCENTAGE_UPPER_LIMIT=85
 CPU_PERCENTAGE_LOWER_LIMIT=25
 PROMETHEUS_API="api/v1/query?query="
-
-## this query return all services 
-## we need to find a way to return 1 services 
 PROMETHEUS_QUERY="sum(rate(container_cpu_usage_seconds_total%7Bcontainer_label_com_docker_swarm_task_name%3D~%27.%2B%27%7D%5B5m%5D))BY(container_label_com_docker_swarm_service_name%2Cinstance)*100"
-
-## decoded query 
-## sum(rate(container_cpu_usage_seconds_total{container_label_com_docker_swarm_task_name=~'.+'}[5m]))BY(container_label_com_docker_swarm_service_name,instance)*100
-
-get_svc_autoscaler() {
-    local toscale=$(docker service inspect $(docker service ls -q) | jq  '[.[] | select(.Spec.Labels["swarm.autoscaler"]=="true")| {name:.Spec.Name, min:.Spec.Labels["swarm.autoscaler.minimum"], max:.Spec.Labels["swarm.autoscaler.maximum"]}] ')
-    echo $toscale 
-}
-
-get_svc_metrics() {
-  results=$(curl --silent "${PROMETHEUS_URL}/${PROMETHEUS_API}${PROMETHEUS_QUERY}" | jq .)
-  echo $results 
-}
-
 
 get_high_cpu_services () {
   local prometheus_results="${1}"
@@ -52,13 +35,12 @@ get_low_cpu_services () {
 
 default_scale () {
   service_name=$1
-  jsonsvdata=$(docker service inspect $service_name )
-  auto_scale_label=$(echo $jsonsvdata | jq '.[].Spec.Labels["swarm.autoscaler"]')
+  auto_scale_label=$(docker service inspect $service_name | jq '.[].Spec.Labels["swarm.autoscaler"]')
+  replica_minimum=$(docker service inspect $service_name | jq '.[].Spec.Labels["swarm.autoscaler.minimum"]' | sed 's/\"//g')
+  replica_maximum=$(docker service inspect $service_name | jq '.[].Spec.Labels["swarm.autoscaler.maximum"]' | sed 's/\"//g')
   if [[ "${auto_scale_label}" == "\"true\"" ]]; then
-    replica_minimum=$(echo $jsonsvdata | jq '.[].Spec.Labels["swarm.autoscaler.minimum"]' | sed 's/\"//g')
-    replica_maximum=$(echo $jsonsvdata | jq '.[].Spec.Labels["swarm.autoscaler.maximum"]' | sed 's/\"//g')
-    echo "Service $service has an autoscale label."
-    current_replicas=$(echo $jsonsvdata | jq ".[].Spec.Mode.Replicated | .Replicas")
+    echo Service $service has an autoscale label.
+    current_replicas=$(docker service inspect $service_name | jq ".[].Spec.Mode.Replicated | .Replicas")
     if [[ $replica_minimum -gt $current_replicas ]]; then
       echo Service $service_name is below the minimum. Scaling to the minimum of $replica_minimum
       docker service scale $service_name=$replica_minimum
