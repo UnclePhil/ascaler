@@ -108,11 +108,10 @@ scale_up () {
 }
 
 main () {
-    prometheus_initial_results=$(curl --silent "${PROMETHEUS_URL}/${PROMETHEUS_API}${PROMETHEUS_QUERY}" | jq .)
-    echo Prometheus results
-    echo $prometheus_initial_results
-    for service in $(get_all_services "${prometheus_initial_results}"); do
-      default_scale $service
+    # loop in labeled services
+    for service in $(get_svc_autoscaler); do
+    ## get metrics 
+
     done
     echo Checking for high cpu services
     for service in $(get_high_cpu_services "${prometheus_initial_results}"); do
