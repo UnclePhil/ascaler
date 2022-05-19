@@ -44,13 +44,17 @@ check () {
     # loop in labeled services
     for assvc in assvcs ; do
       echo "test  $assvc "
+      assvc_name=
+      assvc_min=
+      assvc_max=
+      assvc_repl=
       ## set default replicas (min or max)
       ## if repl < min =>> set repl to min
 
       ## if repl > max =>> set repl to max
 
       ## get metrics 
-      metric = $(get_svc_metrics $asservice)
+      metric = $(get_svc_metrics $assvc)
       ## if metric  > CPU_UPPER_LIMIT =>> scale +1
 
       ## if metric  < CPU_LOWER_LIMIT =>> scale -1
