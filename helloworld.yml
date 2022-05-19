@@ -8,6 +8,6 @@ services:
       driver: json-file
     deploy:
       labels:
-        swarm.autoscaler: 'true'
-        swarm.autoscaler.maximum: '4'
-        swarm.autoscaler.minimum: '3'
+        ascaler: 'true'
+        ascaler.maximum: '4'
+        ascaler.minimum: '3'

@@ -13,7 +13,7 @@ PROMETHEUS_API="api/v1/query?query="
 ## return the service name, the min replica, the max replica 
 ## ================================================================
 get_svc_autoscaler() {
-    local services=$(docker service inspect $(docker service ls -q) | jq  '[.[] | select(.Spec.Labels["swarm.autoscaler"]=="true")| {name:.Spec.Name, min:.Spec.Labels["swarm.autoscaler.minimum"], max:.Spec.Labels["swarm.autoscaler.maximum"],repl:.Spec.Mode.Replicated.Replicas}] ')
+    local services=$(docker service inspect $(docker service ls -q) | jq  '[.[] | select(.Spec.Labels["ascaler"]=="true")| {name:.Spec.Name, min:.Spec.Labels["ascaler.minimum"], max:.Spec.Labels["ascaler.maximum"],repl:.Spec.Mode.Replicated.Replicas}] ')
     echo $services 
 }
 

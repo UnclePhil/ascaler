@@ -4,7 +4,7 @@ LABEL maintainer="koenigphil@gmail.com"
 
 RUN apk update && apk add curl jq
 
-COPY auto-scale.sh /auto-scale.sh
-RUN chmod a+x /auto-scale.sh
+COPY ascale.sh /ascale.sh
+RUN chmod a+x /ascale.sh
 
-CMD ["/auto-scale.sh"]
+CMD ["/ascale.sh"]
