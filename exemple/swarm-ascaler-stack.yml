@@ -5,7 +5,7 @@ networks:
 
 configs:
   prometheus_config:
-    file: ./prometheus.yml
+    file: ./config/prometheus.yml
 
 services:
   ascaler:
