@@ -16,6 +16,7 @@ services:
       - PROMETHEUS_URL=http://prometheus:9090
       - CPU_UPPER_LIMIT=85
       - CPU_LOWER_LIMIT=25
+      - WAIT_TIME=60s 
     networks:
       - ascaler
     deploy:
