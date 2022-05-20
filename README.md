@@ -1,6 +1,6 @@
 # ascaler
 
-## Current Release: 0.0.1
+## Current Release: 1.0.0
 
 This project is a complete rewriting of the https://github.com/jcwimer/docker-swarm-autoscaler
 

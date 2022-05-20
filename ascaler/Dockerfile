@@ -1,10 +1,11 @@
-FRFROM docker:20.10.6
+FROM docker:20.10.6
 
 LABEL maintainer="koenigphil@gmail.com"
 
-RUN apk update && apk add curl jq
+RUN apk update && apk add bash curl jq
 
-COPY ascale.sh /ascale.sh
-RUN chmod a+x /ascale.sh
+WORKDIR /app
+COPY ascale.sh ascale.sh
+RUN chmod a+x ascale.sh
 
-CMD ["/ascale.sh"]
+CMD ["/bin/bash","ascale.sh"]
